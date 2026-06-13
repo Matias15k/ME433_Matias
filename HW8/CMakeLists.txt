@@ -28,35 +28,36 @@ set(PICO_BOARD pico2_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(HW11_Pico C CXX ASM)
+project(HW8 C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(HW11_Pico HW11_Pico.c )
+add_executable(HW8 HW8.c )
 
-pico_set_program_name(HW11_Pico "HW11_Pico")
-pico_set_program_version(HW11_Pico "0.1")
+pico_set_program_name(HW8 "HW8")
+pico_set_program_version(HW8 "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(HW11_Pico 0)
-pico_enable_stdio_usb(HW11_Pico 1)
+pico_enable_stdio_uart(HW8 0)
+pico_enable_stdio_usb(HW8 0)
 
 # Add the standard library to the build
-target_link_libraries(HW11_Pico
-        pico_stdlib)
+target_link_libraries(HW8
+        pico_stdlib
+        hardware_spi)
 
 # Add the standard include files to the build
-target_include_directories(HW11_Pico PRIVATE
+target_include_directories(HW8 PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Add any user requested libraries
-target_link_libraries(HW11_Pico 
+target_link_libraries(HW8 
         pico_cyw43_arch_none
         )
 
-pico_add_extra_outputs(HW11_Pico)
+pico_add_extra_outputs(HW8)
 

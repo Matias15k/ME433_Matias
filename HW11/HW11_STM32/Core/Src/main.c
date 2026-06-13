@@ -46,7 +46,10 @@ COM_InitTypeDef BspCOMInit;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
+#define BUF_SIZE 64
 
+static uint8_t com_to_pico_buf[BUF_SIZE];
+static uint8_t pico_to_com_buf[BUF_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -93,7 +96,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  uint8_t rx_byte;
   /* USER CODE END 2 */
 
   /* Initialize leds */
@@ -104,7 +107,7 @@ int main(void)
   BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
 
   /* Initialize COM1 port (115200, 8 bits (7-bit data + 1 stop bit), no parity */
-  BspCOMInit.BaudRate   = 115200;
+  BspCOMInit.BaudRate   = 9600;
   BspCOMInit.WordLength = COM_WORDLENGTH_8B;
   BspCOMInit.StopBits   = COM_STOPBITS_1;
   BspCOMInit.Parity     = COM_PARITY_NONE;
@@ -118,6 +121,20 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	    // Computer -> Pico: read from ST-Link virtual COM, forward to USART1 (Pico)
+	    // Use timeout=0 for non-blocking receive
+	    if (HAL_UART_Receive(&hcom_uart[COM1], com_to_pico_buf, 1, 0) == HAL_OK)
+	    {
+	        // Use short timeout (1ms) instead of HAL_MAX_DELAY
+	        HAL_UART_Transmit(&huart1, com_to_pico_buf, 1, 1);
+	    }
+
+	    // Pico -> Computer: read from USART1, forward to ST-Link virtual COM
+	    if (HAL_UART_Receive(&huart1, pico_to_com_buf, 1, 0) == HAL_OK)
+	    {
+	        // Use short timeout (1ms) instead of HAL_MAX_DELAY
+	        HAL_UART_Transmit(&hcom_uart[COM1], pico_to_com_buf, 1, 1);
+	    }
 
     /* USER CODE END WHILE */
 
@@ -180,7 +197,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
